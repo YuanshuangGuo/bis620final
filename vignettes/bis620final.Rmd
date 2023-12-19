@@ -19,11 +19,15 @@ library(bis620final)
 library(lubridate)
 library(dplyr)
 library(ggplot2)
-library(haven)
-library(purrr)
 library(gtsummary)
+library(survival)
+library(survminer)
 
 data(adae)
+data(adlb)
+data(adls)
+data(adpm)
+data(adrsp)
 data(adsl)
 data(biomark)
 
@@ -67,11 +71,39 @@ Since the p-value 6.513e-06 is less than $\alpha=0.05$, we can reject the null h
 
 Next, we perform a survival analysis to death outcome with respect to biomarker. 
 ```{r}
+# create a new variable of the combination of treatment and biomarker
+demo$marker_treat <- paste0(demo$marker, "_", demo$treatment)
+create_KM_plot(demo)
+```
+
+And we can also retrieve summary information from the survival analysis via the following function.
+```{r}
+create_survival_info(demo)
+```
+
+Next, we solve the problem using from a logistic regression approach. 
+```{r}
+# fit a logistic regression model on the joint effect of treatment and marker
+# use only observations with marker "Mutant" or "Wild-type"
+fit_logistic(demo)
+```
+
+
+We also provide a Generalized Additive Model (GAM) method on modeling the relationship between life expectancy and biomarker and treatment.
+```{r}
 
 ```
 
 
-We also provide 
+The next model we proposed is the generalized boosted regression model (GBM) for investigating the relationship between the death outcome and predictors of interest. Generalized boosted regression models can be a good fit for binary classification problem, and the predictor importance can also be reported to boost understanding of the impact of predictors on the death outcome. 
+```{r}
+# fit a gbm model 
+gbm_demo <- demo
+gbm_demo$ATRT <- factor(gbm_demo$ATRT)
+gbm_demo$marker <- factor(gbm_demo$marker)
+my_vars <- c("ATRT", "marker")
+
+```
 
 
 
