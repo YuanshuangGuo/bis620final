@@ -15,5 +15,81 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup}
-library(bis620.2022)
+library(bis620final)
+library(lubridate)
+library(dplyr)
+library(ggplot2)
+library(haven)
+library(purrr)
+library(gtsummary)
+
+data(adae)
+data(adsl)
+data(biomark)
+
 ```
+
+
+
+
+
+It was hypothesized that patients in the study with KRAS mutations in exons 2, 3, and 4 would have poorer outcomes. 
+Since there are two columns referencing exon 3 (c61 and c59/c61), we use both of them for determining whether a patient is mutant or not. A patient will be considered "Mutant" if there is at least one "Mutant" biomarkers in KRAS exons 2, 3, 4. Patients will be considered "Wild-type" if they are not "Mutant" and they have more "Wild-type" markers than "Unknown" or "Failure". You can also use the following functions to investigate other mutations of interest. 
+
+```{r}
+# merge dl$adsl and dl$biomark based on SUBJID
+demo = left_join(adsl, biomark, by = "SUBJID")
+
+# create a new variable marker to record the patient marker for each patient: 
+# "Mutant", "Wild-type", or ""
+demo <- determine_mutant(demo, c("BMMTR1", "BMMTR2", "BMMTR3", "BMMTR15"))
+```
+
+- Create a plot of number of total mutant, wild-type, and unknown KRAS counts per patient. That is, create a plot where the x-axis has the values "Mutant", "Wild-type", and "Unknown" with the y-axis showing the total count for those values over all patients.
+
+```{r}
+plot_mutant_cnt(demo, "marker")
+```
+
+- Let the outcome be whether the patient died during the study. 
+
+  - Is the marker prognostic with respect to the death outcome? 
+  - Is it predictive with respect to the death outcome? 
+
+To test whether the marker is prognostic with respect to the death outcome, we can formulate the null hypothesis as that the death outcome is independent of biomarker, that is, biomarker is not prognostic with respect to the death outcome. If the p-value obtained from the chi-squared test is less than significance level $\alpha=0.05$, we can conclude that the biomarker is prognostic with respect to the death outcome.
+```{r}
+# create a contingency table of death vs. marker and use chi-squared test to test whether marker is prognostic to death outcome
+# use only observations with marker "Mutant" or "Wild-type"
+chi_square_test(demo)
+```
+
+Since the p-value 6.513e-06 is less than $\alpha=0.05$, we can reject the null hypothesis and conclude that the biomarker is prognostic with respect to the death outcome. 
+
+Next, we perform a survival analysis to death outcome with respect to biomarker. 
+```{r}
+
+```
+
+
+We also provide 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
