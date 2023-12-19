@@ -30,15 +30,22 @@ data(adpm)
 data(adrsp)
 data(adsl)
 data(biomark)
-
 ```
 
 
+# Background and Motivation
+Colorectal cancer (CRC) remains a significant global health challenge, contributing substantially to cancer-related morbidity and mortality. Among the myriad molecular alterations associated with CRC, mutations in the KRAS gene have emerged as pivotal determinants in disease progression and therapeutic response. The dichotomy in the mutational status of KRAS, wild-type (WT) or mutant, profoundly influences therapeutic strategies and clinical outcomes (Andreyev et al., 2001] (https://doi.org/10.1054/bjoc.2001.1964)). In recent years, the advent of targeted therapies has revolutionized the management of CRC, particularly in the context of the folinic acid, fluorouracil, and oxaliplatin (FOLFOX) regimen ([Cassidy et al., 2008](https://doi.org/10.1200/ JCO.2007.13.6847)). The addition of Panitumumab, a monoclonal antibody targeting the epidermal growth factor receptor (EGFR), has demonstrated enhanced efficacy in KRAS wild-type patients ([Van Cutsem et al., 2007](https://doi.org/10.1200/JCO.2006.08.1620)). 
+
+In this research, our primary objective is to analyze the Panitumumab dataset, concentrating on the various factors that influence death outcome and life expectancy. This investigation originated from queries presented in the BIS620 course homework. We first encapsulated certain functions we found useful for further studies. Continued from there, we expanded our analysis of the dataset by employing a range of statistical techniques to understand the relationship between mortality and Panitumumab treatment/control, along with other demographic predictors that may provide valuable insights.
+
+The methodologies we employed encompass the use of contingency tables, survival analysis, logistic regression, generalized additive models, and generalized boosted regression models. All the functions utilized in this study have been incorporated into an R package. This vignette is designed to offer a practical example of how we utilized these functions to conduct a preliminary analysis of the Panitumumab dataset.
 
 
+# Research question
+This retrospective analysis is based on data obtained from the NIH US National Library of Medicine. It involved participants who were randomly assigned to one of two groups: one receiving panitumumab (6 mg/kg on the first day) along with the FOLFOX chemotherapy regimen on the first and second days of each 14-day cycle, continuing until either disease progression or the emergence of intolerable side effects; the other group was given only the FOLFOX chemotherapy following the same schedule until disease progression or unacceptable toxicity occurred. The primary focus of our study is to explore the relationship between mortality and various factors, including biomarkers, treatment, and a range of demographic predictors. To thoroughly examine this relationship, we will employ diverse statistical methods ranging from survival analysis to machine learning models to analyze the data from multiple perspectives.
 
-It was hypothesized that patients in the study with KRAS mutations in exons 2, 3, and 4 would have poorer outcomes. 
-Since there are two columns referencing exon 3 (c61 and c59/c61), we use both of them for determining whether a patient is mutant or not. A patient will be considered "Mutant" if there is at least one "Mutant" biomarkers in KRAS exons 2, 3, 4. Patients will be considered "Wild-type" if they are not "Mutant" and they have more "Wild-type" markers than "Unknown" or "Failure". You can also use the following functions to investigate other mutations of interest. 
+# Data cleaning and exploration
+We provided in our package a function to determine whether a patient is mutant, wild-type or other. You can utilize this function to label the patients based on your own choice of mutation exons. For instance, here we showcased a toy example following from the homework setting. We focus our attention to KRAS mutations in exons 2, 3, and 4. Since there are two columns referencing exon 3 (c61 and c59/c61), we use both of them for determining whether a patient is mutant or not. A patient will be considered "Mutant" if there is at least one "Mutant" biomarkers in KRAS exons 2, 3, 4. Patients will be considered "Wild-type" if they are not "Mutant" and they have more "Wild-type" markers than "Unknown" or "Failure". You can also use the following functions to investigate other mutations of interest. 
 
 ```{r}
 # merge dl$adsl and dl$biomark based on SUBJID
@@ -49,21 +56,17 @@ demo = left_join(adsl, biomark, by = "SUBJID")
 demo <- determine_mutant(demo, c("BMMTR1", "BMMTR2", "BMMTR3", "BMMTR15"))
 ```
 
-- Create a plot of number of total mutant, wild-type, and unknown KRAS counts per patient. That is, create a plot where the x-axis has the values "Mutant", "Wild-type", and "Unknown" with the y-axis showing the total count for those values over all patients.
+We also provide another function for creating a plot of number of total mutant, wild-type, and unknown KRAS counts per patient for the purpose of data visualization. This graph categorizes patients into three groups: "Mutant", "Wild-type", and "Unknown", where x-axis of the plot labels these categories while the y-axis quantifies the total number of patients in each category. Below is an illustrative example of such a plot.
 
 ```{r}
 plot_mutant_cnt(demo, "marker")
 ```
 
-- Let the outcome be whether the patient died during the study. 
-
-  - Is the marker prognostic with respect to the death outcome? 
-  - Is it predictive with respect to the death outcome? 
+# Analysis
+We will explore the relationship between mortality and several demographics predictors in the following section. The integration of survival analysis and machine learning models holds the promise of unraveling the intricate interplay between genetic mutations, treatment modalities, and individual patient characteristics.
 
 **Statistical Analysis:**
-Descriptive statistics will be used to summarize baseline characteristics, and survival outcomes will be compared using appropriate statistical tests. In the machine learning analysis, significance testing for individual variables and model performance will be assessed through appropriate statistical measures. Analysis of Variance (ANOVA) will be performed to assess the significance of differences in means across the treatment groups.
-
-To test whether the marker is prognostic with respect to the death outcome, we can formulate the null hypothesis as that the death outcome is independent of biomarker, that is, biomarker is not prognostic with respect to the death outcome. If the p-value obtained from the chi-squared test is less than significance level $\alpha=0.05$, we can conclude that the biomarker is prognostic with respect to the death outcome.
+Descriptive statistics will be used to summarize baseline characteristics, and survival outcomes will be compared using appropriate statistical tests. To test whether the biomarker is prognostic with respect to the death outcome, we can formulate the null hypothesis as that the death outcome is independent of biomarker, that is, biomarker is not prognostic with respect to the death outcome. If the p-value obtained from the chi-squared test is less than significance level $\alpha=0.05$, we can conclude that the biomarker is prognostic with respect to the death outcome. We have included in our package the following function to perform a hypothesis testing and return a summary table.
 ```{r}
 # create a contingency table of death vs. marker and use chi-squared test to test whether marker is prognostic to death outcome
 # use only observations with marker "Mutant" or "Wild-type"
@@ -75,19 +78,19 @@ Since the p-value 6.513e-06 is less than $\alpha=0.05$, we can reject the null h
 Next, we perform a survival analysis to death outcome with respect to biomarker. 
 
 **Survival Analysis:**
-Survival analysis will be conducted on each treatment group to evaluate progression-free survival and overall survival outcomes. Kaplan-Meier curves will be generated, and log-rank tests will be employed to assess the significance of observed differences.
+Survival analysis will be conducted on each treatment group to evaluate progression-free survival and overall survival outcomes. Kaplan-Meier curves will be generated, and log-rank tests will be employed to assess the significance of observed differences. You can use the following function for plotting a KM plot for your dataset. 
 ```{r}
 # create a new variable of the combination of treatment and biomarker
 demo$marker_treat <- paste0(demo$marker, "_", demo$treatment)
 create_KM_plot(demo)
 ```
 
-We can also retrieve summary information from the survival analysis via the following function.
+We can also retrieve summary information from the survival analysis via the following function. A summary table will be returned. 
 ```{r}
 create_survival_info(demo)
 ```
 
-Next, we solve the problem using from a logistic regression approach. 
+Next, we solve the problem using from a machine learning approach. In the machine learning analysis, significance testing for individual variables and model performance will be assessed through appropriate statistical measures. Analysis of Variance (ANOVA) will be performed to assess the significance of differences in means across the treatment groups.
 
 **Machine Learning Analysis:**
 Logistic regression will be employed to investigate the predictive value of various variables in determining life expectancy. The analysis will utilize death outcome as the target variable (a binary response) and other relevant clinical, molecular, and demographic variables as features. P-value will be computed to quantify the significance of individual features in predicting life expectancy. This information will be utilized as criteria for feature selection, facilitating the identification of key variables influencing survival outcomes. 
@@ -98,7 +101,7 @@ fit_logistic(demo)
 ```
 
 
-We also provide a Generalized Additive Model (GAM) method on modeling the relationship between life expectancy and biomarker and treatment.
+We also provide a Generalized Additive Model (GAM) method on modeling the relationship between life expectancy and biomarker and treatment. Similar as before, a model summary table will be returned for your information. 
 ```{r}
 library(mgcv)
 
@@ -111,15 +114,10 @@ gam_demo$PRSURG <- factor(gam_demo$PRSURG)
 gam_demo$SEX <- factor(gam_demo$SEX)
 gam_demo$RACE <- factor(gam_demo$RACE)
 
-gam_model <- gam(DTH ~ ATRT + PRSURG + PFSDYCR + s(AGE, by=marker)
-                 + SEX + RACE + B_WEIGHT + B_HEIGHT + marker, data = gam_demo, 
-                 family = binomial(), method = "REML")
-plot(gam_model)
-summary(gam_model)
+fit_gam(gam_demo)
 ```
 
-
-The next model we proposed is the generalized boosted regression model (GBM) for investigating the relationship between the death outcome and predictors of interest. Generalized boosted regression models can be a good fit for binary classification problem, and the predictor importance can also be reported to boost understanding of the impact of predictors on the death outcome. 
+The next model we proposed is the generalized boosted regression model (GBM) for investigating the relationship between the death outcome and predictors of interest. Generalized boosted regression models can be a good fit for binary classification problem, and the predictor importance can also be reported to boost understanding of the impact of predictors on the death outcome. A summary table will be returned and the importance of variables will be plotted. 
 ```{r}
 # fit a gbm model 
 gbm_demo <- demo
@@ -134,14 +132,12 @@ gbm_demo$RACE <- factor(gbm_demo$RACE)
 fit_gbm(gbm_demo)
 ```
 
+# Interpretation and Conclusion
+In conclusion, the analysis presented above provides compelling evidence that both treatment and biomarker status significantly influence the outcome of death in the context of our clinical study. The intricate interplay between these variables suggests a nuanced landscape in patient response and prognosis, underscoring the need for personalized treatment strategies in clinical practice.
 
+Our findings indicate that the type of treatment, particularly the use of targeted therapies like Panitumumab in combination with the FOLFOX chemotherapy regimen, plays a crucial role in determining patient outcomes. Furthermore, the presence or absence of certain biomarkers, such as KRAS mutations, emerges as a critical factor in predicting the efficacy of these treatments. This highlights the importance of genetic testing and biomarker analysis in guiding therapeutic decisions and optimizing patient care.
 
-
-
-
-
-
-
+The utilization of our developed R package in this study has proven instrumental in facilitating these insights. By harnessing the power of advanced statistical toolkits, including survival analysis and machine learning models, we have been able to dissect the complex relationships between treatment modalities, genetic markers, and patient demographics. This approach has not only enriched our understanding of the data but has also paved the way for more sophisticated analyses in future research.
 
 
 
