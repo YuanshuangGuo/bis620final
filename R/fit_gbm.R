@@ -2,17 +2,16 @@
 #' To model a generalized boosted regression model
 #'
 #' @param x the database table with biomarker and treatment
-#' @param x_vars the predictors of interest, can be a vector of predictors
 #' @returns a model summary
 #' @importFrom gbm gbm
 #' @export
-fit_gbm = function(x, x_vars){
-  my_formula = paste0("DTH ~ ", paste(x_vars, collapse = " + "))
-  print(my_formula)
-  my_fit = gbm(my_formula,
+fit_gbm = function(x){
+  my_fit = gbm(DTH ~ ATRT + PRSURG + PFSDYCR + AGE + SEX + RACE +
+                 B_WEIGHT + B_HEIGHT + marker,
                data = x,
                distribution = "bernoulli",
                interaction.depth = 3,
-               cv.folds = 5)
+               cv.folds = 5,
+               n.cores = 1)
   summary(my_fit)
 }

@@ -60,6 +60,9 @@ plot_mutant_cnt(demo, "marker")
   - Is the marker prognostic with respect to the death outcome? 
   - Is it predictive with respect to the death outcome? 
 
+**Statistical Analysis:**
+Descriptive statistics will be used to summarize baseline characteristics, and survival outcomes will be compared using appropriate statistical tests. In the machine learning analysis, significance testing for individual variables and model performance will be assessed through appropriate statistical measures. Analysis of Variance (ANOVA) will be performed to assess the significance of differences in means across the treatment groups.
+
 To test whether the marker is prognostic with respect to the death outcome, we can formulate the null hypothesis as that the death outcome is independent of biomarker, that is, biomarker is not prognostic with respect to the death outcome. If the p-value obtained from the chi-squared test is less than significance level $\alpha=0.05$, we can conclude that the biomarker is prognostic with respect to the death outcome.
 ```{r}
 # create a contingency table of death vs. marker and use chi-squared test to test whether marker is prognostic to death outcome
@@ -70,18 +73,24 @@ chi_square_test(demo)
 Since the p-value 6.513e-06 is less than $\alpha=0.05$, we can reject the null hypothesis and conclude that the biomarker is prognostic with respect to the death outcome. 
 
 Next, we perform a survival analysis to death outcome with respect to biomarker. 
+
+**Survival Analysis:**
+Survival analysis will be conducted on each treatment group to evaluate progression-free survival and overall survival outcomes. Kaplan-Meier curves will be generated, and log-rank tests will be employed to assess the significance of observed differences.
 ```{r}
 # create a new variable of the combination of treatment and biomarker
 demo$marker_treat <- paste0(demo$marker, "_", demo$treatment)
 create_KM_plot(demo)
 ```
 
-And we can also retrieve summary information from the survival analysis via the following function.
+We can also retrieve summary information from the survival analysis via the following function.
 ```{r}
 create_survival_info(demo)
 ```
 
 Next, we solve the problem using from a logistic regression approach. 
+
+**Machine Learning Analysis:**
+Logistic regression will be employed to investigate the predictive value of various variables in determining life expectancy. The analysis will utilize death outcome as the target variable (a binary response) and other relevant clinical, molecular, and demographic variables as features. P-value will be computed to quantify the significance of individual features in predicting life expectancy. This information will be utilized as criteria for feature selection, facilitating the identification of key variables influencing survival outcomes. 
 ```{r}
 # fit a logistic regression model on the joint effect of treatment and marker
 # use only observations with marker "Mutant" or "Wild-type"
@@ -91,7 +100,22 @@ fit_logistic(demo)
 
 We also provide a Generalized Additive Model (GAM) method on modeling the relationship between life expectancy and biomarker and treatment.
 ```{r}
+library(mgcv)
 
+# fit a gam model
+gam_demo <- demo
+gam_demo$ATRT <- factor(gam_demo$ATRT)
+gam_demo$marker <- factor(gam_demo$marker)
+gam_demo$marker <- ordered(gam_demo$marker)
+gam_demo$PRSURG <- factor(gam_demo$PRSURG)
+gam_demo$SEX <- factor(gam_demo$SEX)
+gam_demo$RACE <- factor(gam_demo$RACE)
+
+gam_model <- gam(DTH ~ ATRT + PRSURG + PFSDYCR + s(AGE, by=marker)
+                 + SEX + RACE + B_WEIGHT + B_HEIGHT + marker, data = gam_demo, 
+                 family = binomial(), method = "REML")
+plot(gam_model)
+summary(gam_model)
 ```
 
 
@@ -101,9 +125,17 @@ The next model we proposed is the generalized boosted regression model (GBM) for
 gbm_demo <- demo
 gbm_demo$ATRT <- factor(gbm_demo$ATRT)
 gbm_demo$marker <- factor(gbm_demo$marker)
-my_vars <- c("ATRT", "marker")
+gbm_demo$AGE <- factor(gbm_demo$AGE)
+gbm_demo$PRSURG <- factor(gbm_demo$PRSURG)
+gbm_demo$SEX <- factor(gbm_demo$SEX)
+gbm_demo$RACE <- factor(gbm_demo$RACE)
 
+# print variable importance
+fit_gbm(gbm_demo)
 ```
+
+
+
 
 
 

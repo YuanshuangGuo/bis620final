@@ -4,12 +4,10 @@
 \alias{fit_gbm}
 \title{To model a generalized boosted regression model}
 \usage{
-fit_gbm(x, x_vars)
+fit_gbm(x)
 }
 \arguments{
 \item{x}{the database table with biomarker and treatment}
-
-\item{x_vars}{the predictors of interest, can be a vector of predictors}
 }
 \value{
 a model summary

@@ -87,6 +87,20 @@
 #' }
 "biomark"
 
-
+#' demo
+#'
+#' @format ## `demo`
+#' A data frame with 935 rows and 19 columns:
+#' "SUBJID"       "TRT"          "ATRT"         "PRSURG"       "DTHDY"        "DTH"
+#' "PFSDYCR"      "PFSCR"        "LIVERMET"     "DIAGMONS"     "AGE"          "SEX"
+#' "B_WEIGHT"     "B_HEIGHT"     "RACE"         "B_ECOG"       "HISSUBTY"     "B_METANM"
+#' "DIAGTYPE"     "BMMTNM1"      "BMMTR1"       "BMMTNM2"      "BMMTR2"       "BMMTNM3"
+#' "BMMTR3"       "BMMTNM4"      "BMMTR4"       "BMMTNM5"      "BMMTR5"       "BMMTNM6"
+#' "BMMTR6"       "BMMTNM7"      "BMMTR7"       "BMMTNM15"     "BMMTR15"      "BMMTNM16"
+#' "BMMTR16"      "marker"       "marker_treat"
+#' \describe{
+#'   \item{SUBJID}{subject ID}
+#' }
+"demo"
 
 

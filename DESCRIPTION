@@ -14,13 +14,14 @@ RoxygenNote: 7.2.3
 Imports:
   dplyr,
   ggplot2,
-  tidyr,
   gtsummary,
   gbm,
+  mgcv,
   survival,
   survminer
 Suggests: 
     knitr,
+    tidyr,
     rmarkdown,
     lubridate,
     testthat (>= 3.0.0),
